@@ -1,0 +1,21 @@
+# The secrets this blog takes. Copy this file to `.dev.vars` to use them locally
+# (`.dev.vars` stays out of git).
+#
+# **This file is also what the Deploy to Cloudflare screen reads.** Deploying from the
+# button turns every key in here into a field to fill in, and what you type becomes a
+# Worker secret.
+#
+# Leave them empty locally and the admin UI still opens: lily falls back to the
+# `localhostOnly` adapter, which only passes when the host is localhost or 127.0.0.1,
+# and therefore never passes on a real domain.
+
+# The admin password. **12 characters or more** — anything shorter is refused, because
+# the only defence against brute force is a delay on failure. Replacing it also voids
+# every login cookie already handed out.
+ADMIN_PASSWORD=
+
+# Announcing posts on Bluesky (optional). **Used only when both are set**; with either
+# missing, the announce button in the admin UI says "not configured" and nothing else
+# changes. Use an App Password, not your account password.
+# BLUESKY_IDENTIFIER=
+# BLUESKY_APP_PASSWORD=

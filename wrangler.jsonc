@@ -1,0 +1,59 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // The name this Worker is deployed under. **Change it.**
+  "name": "my-blog",
+  "main": "./src/index.ts",
+  "compatibility_date": "2026-09-01",
+
+  // **No resource IDs by hand.** Both Deploy to Cloudflare and `wrangler deploy`
+  // create what is missing and bind it. The only thing the code knows is the
+  // binding name (`DB` / `MEDIA` / `ASSETS`).
+  //
+  // **lily owns the schema.** The migrations are not copied here; this points
+  // into the package. Applying them is `wrangler d1 migrations apply DB`
+  // (`npm run db:migrate`).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-blog",
+      "migrations_dir": "./node_modules/@kanf/lily/migrations","database_id": "0a51f059-ab99-446f-addd-3c272e53a6d6"
+    }
+  ],
+
+  // The originals of every attachment. **Images go here and lily builds the
+  // delivery URLs**, which do not depend on how they are stored.
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "my-blog-media","preview_bucket_name": "my-blog-media" }],
+
+  // Where the admin UI and anything in `public/` are served from. `npm run build`
+  // (`lily-assets`) merges both into `dist/`.
+  //
+  // **Keep `run_worker_first`.** Without it `/` resolves as a static asset and
+  // neither the index nor a post ever reaches the Worker.
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "run_worker_first": true
+  },
+
+  // The theme's CSS is bundled into the Worker as a string. **Keep `fallthrough`**
+  // — without it, wrangler's default rules (`**/*.txt`, `**/*.html`, `**/*.sql`)
+  // are disabled wholesale.
+  "rules": [{ "type": "Text", "globs": ["**/*.css"], "fallthrough": true }]
+
+  // ---------------------------------------------------------------------------
+  // Everything below is optional. **Posting, serving, attachments and the
+  // portable export all work without it.**
+  //
+  // Daily backups (see "Backups" in the README). A separate bucket, because
+  // putting the copies beside the attachments means one mistaken deletion or
+  // lifecycle rule takes both:
+  //   add { "binding": "BACKUP", "bucket_name": "my-blog-backup" } to "r2_buckets",
+  //   and "triggers": { "crons": ["30 18 * * *"] },
+  //
+  // Image optimisation through Cloudflare Images. **lily assumes it is absent**,
+  // so this is a layer that makes delivery better once it is there. To enable it,
+  // add the binding below and `media: { images: true }` to `src/config.ts`:
+  //   "images": { "binding": "IMAGES" },
+  // ---------------------------------------------------------------------------
+}

@@ -1,0 +1,27 @@
+{
+  "name": "my-blog",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "//dev": "build and migrate first: neither dist/ (assets.directory) nor the local D1 is in git, so a fresh clone has neither. Without them wrangler refuses to start, or the public pages 500 with D1_ERROR: no such table",
+    "dev": "npm run build && npm run db:migrate:local && wrangler dev",
+    "//build": "merge what gets served into dist/. wrangler.jsonc points assets.directory at it, so dev and deploy both need it. lily-assets ships with @kanf/lily",
+    "build": "lily-assets dist public",
+    "//deploy": "every deploy after the first. Migrations run before wrangler deploy, so new code never meets an old schema",
+    "deploy": "npm run build && npm run db:migrate && wrangler deploy",
+    "//deploy:first": "the first deploy only. D1 and R2 are created from the bindings during wrangler deploy, so there is nothing to migrate until it has run once",
+    "deploy:first": "npm run build && wrangler deploy && npm run db:migrate",
+    "db:migrate": "wrangler d1 migrations apply DB --remote",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "typecheck": "wrangler types && tsc --noEmit"
+  },
+  "//dependencies": "the CMS itself. The admin UI, the migrations and lily-assets all ship inside it, so this is the only one",
+  "dependencies": {
+    "@kanf/lily": "^0.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "wrangler": "^4.131.1"
+  }
+}
